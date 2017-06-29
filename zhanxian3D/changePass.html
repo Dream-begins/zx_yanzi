@@ -1,0 +1,50 @@
+<div id="accbox">
+	<h1>	首次登录请修改密码!</h1>
+	<table class="tab_search">
+		<form  action="changePass.php" method="post" id="changeop">
+			<tr><td>新登录密码：</td>
+				<td><input type="password" id="passId" name="passId" value="" size=50 /></td>
+				<td>注意：密码中不能包含#号</td>
+			</tr>
+			<tr><td>确定新密码：</td>
+				<td><input type="password" id="passId2" name="passId2" value="" size=50/></td>
+			</tr>
+			<tr><td><input type="button" value="提交" onclick="changePass()" /></td>
+			</tr>
+		</form>
+	</table>
+</div>
+<script type="text/javascript">
+	function changePass()
+	{
+//		    $.get("changePass.php?newPas="+$("#passId").val(),function(data){
+//					            $("#zoneto").val(data);
+//								            });
+		var newpass=$("#accbox #passId").val();
+		var compass=$("#accbox #passId2").val();
+		if(!newpass)
+		{
+			window.confirm("密码不能为空！");
+			return;
+		}   
+		if(newpass!=compass)
+		{
+			window.confirm("确认密码不正确！");
+			return;
+		}
+		if(newpass.search('#')!=-1)
+		{
+			window.confirm("密码中不能包含#号");
+			return;
+		}
+//		$.post("changePass.php"
+//			, {passId:newpass});
+		var i=window.confirm("登录密码更改为："+newpass);
+		if(i!=0)
+		{
+			$.post("changePass.php", {passId:newpass});
+			window.confirm("修改成功！");
+//			$.get("changePass.php?newPas="+newpass);
+		}
+	}
+</script>

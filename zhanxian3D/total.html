@@ -1,0 +1,90 @@
+<div id="total">
+    <div>
+        <table>
+            <tr>
+                <td>
+                    <select id="zone" ></select>
+                </td>
+                <td>
+                    <input type="button" value="导出" onclick="exportData('total','total.php')" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    
+    <div id="dataTable"></div>
+    
+    <div id="chart" styles="width:90%" ></div>
+
+</div>
+
+<script type="text/javascript">
+
+$(function()
+{
+    $('#total #dataTable').datagrid({
+        url:'total.php',
+        remoteSort: true,
+        pagination:true,
+        rownumbers:true,
+        columns:[[
+            {field:'dt',title:'日期',width:120}, 
+            {field:'ammount',title:'总数',width:80}, 
+            {field:'ammount2',title:'总数(含2Q点)',width:80},
+            {field:'cnt',title:'付费人数',width:80},
+            {field:'cnt2',title:'付费人数(含2Q点)',width:120},
+            {field:'arpu',title:'arpu',width:80,formatter:function(value,row){
+                return (parseInt(row["ammount"])/parseInt(row["cnt"])).toFixed(2);
+            }},
+            {field:'arpu2',title:'arpu2',width:80,formatter:function(value,row){
+                return (parseInt(row["ammount2"])/parseInt(row["cnt2"])).toFixed(2)
+            }},
+        ]],
+
+        onLoadSuccess:function(data){
+            plotData(data);
+        }
+    });
+
+    $("#total #chart").width = 800;
+});
+
+var plotTotal;
+
+function plotData(data)
+{
+    if(plotTotal)
+    {
+        plotTotal.destroy();
+    }
+
+    var d=[[]];
+
+    for (var i in data.rows )
+    {
+        row = data.rows[i];
+        d[0].push([row["dt"]+" 00:00:00",parseFloat(row["ammount"])]);
+    }
+
+    plotTotal = $.jqplot('chart',d,{
+        title: '总收入',
+        width:600,
+        axes:{
+            xaxis:{
+                renderer:$.jqplot.DateAxisRenderer,
+                tickOptions:{formatString:'%Y-%m-%d'},
+                tickInterval:'1 day'
+            }
+        },
+        seriesDefaults: {
+            showMarker:false,
+            pointLabels: { show:true }
+        },
+        series:[{lineWidth:4, markerOptions:{style:'square'}}],
+        highlighter: {
+            show: true 
+        }
+    });
+}
+
+</script>

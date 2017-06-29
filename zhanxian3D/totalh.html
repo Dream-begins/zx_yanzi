@@ -1,0 +1,186 @@
+<div id="totalh">
+    <div>
+        <table class="tab_search">
+            <tr>
+                <td>查看日期:</td>
+                <td><input class="easyui-datebox" id="from" name="from"></td>
+                <td>对比日期:</td>
+                <td><input class="easyui-datebox" name="to" id="to"></td>
+                <td><input type="button" value="查看" onclick="loadData()" /></td>
+                <td><input type="checkbox" value="1" id="autorefresh" onchange="onChangeRefresh()" />自动刷新</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div id="totalh_chart" styles="width:90%,height:500" > </div>
+
+    <div id="dataTable" > </div>
+</div>
+
+<script type="text/javascript">
+
+refreshTimer=0;
+
+var param = {};
+
+$(function()
+{
+    $.parser.parse($("#totalh .tab_search"));
+    $("#totalh #from").datebox("setValue",new Date().formatDate("yyyy-MM-dd"));
+    var prev = new Date();
+    prev.setDate(prev.getDate()-1);
+    $("#totalh #to").datebox("setValue",prev.formatDate("yyyy-MM-dd"));
+
+    loadData();
+
+    onChangeRefresh();
+});
+
+function onChangeRefresh()
+{
+    if(autorefresh.checked)
+    {
+        if(refreshTimer == 0)
+        {
+            refreshTimer = setInterval(loadData,300000);
+        }
+    }
+    else
+    {
+        if(refreshTimer>0) clearInterval(refreshTimer);
+        
+        refreshTimer = 0;
+    }
+}
+
+function reloadTotalhData()
+{
+    $.getJSON( "totalh.php", param,function( data ) {
+        for(i=0;i<6;i++)
+            $("#totalh_chart").highcharts().series[i].setData(data[i],true);
+    });
+}
+
+var plot1;
+
+function loadData()
+{
+    $.each($("#totalh .tab_search :input").serializeArray(),function(i,o)
+    {
+        if($.trim(o.value) != "")
+        {
+            param[o.name] = o.value;
+        }
+    });
+
+    $.getJSON( "totalh.php", param,function( data )
+    {
+        accdata=[];
+
+        for(j=0;j<6;j++)
+        {
+            accdata[j]=[];
+
+            for(i=0;i<24;i++)
+            {
+                val = data[j][i];
+                if(val != undefined)
+                {
+                    if(i>0)
+                        accdata[j][i] = accdata[j][i-1]+val;
+                    else
+                        accdata[j][i] = val;
+                }
+            }
+        }
+
+        if($("#totalh_chart").highcharts() == undefined)
+        {
+            $("#totalh_chart").highcharts({
+                title:{text:"分时曲线图"},
+                xAxis: {type:'linear',tickInterval:1,tickLength:24},
+                yAxis:{min:0},
+                chart:{height:600},
+                plotOptions: {
+                    column: {
+                        stacking: 'normal'
+                    }
+                },
+                series:[
+                    {name:param["from"],data:data[0],color:"#ff0000"},
+                    {name:param["to"],data:data[1]},
+                    {name:param["from"]+"大厅",visible:false,data:data[2],stack:0,type:'column'},
+                    {name:param["to"]+"大厅",visible:false,data:data[3],stack:1,type:'column'},
+                    {name:param["from"]+"空间",visible:false,data:data[4],stack:0,type:'column'},
+                    {name:param["to"]+"空间",visible:false,data:data[5],stack:1,type:'column'},
+                    {name:param["from"]+"累计",visible:false,data:accdata[0]},
+                    {name:param["to"]+"累计",visible:false,data:accdata[1]},
+                    {name:param["from"]+"大厅累计",visible:false,data:accdata[2],stack:0,type:'column'},
+                    {name:param["to"]+"大厅累计",visible:false,data:accdata[3],stack:1,type:'column'},
+                    {name:param["from"]+"空间累计",visible:false,data:accdata[4],stack:0,type:'column'},
+                    {name:param["to"]+"空间累计",visible:false,data:accdata[5],stack:1,type:'column'}
+                ]
+            });
+        }
+        else
+        {
+            $("#totalh_chart").highcharts({
+                title:{text:"分时曲线图"},
+                xAxis: {type:'linear',tickInterval:1,tickLength:24},
+                yAxis:{min:0},
+                chart:{height:600},
+                plotOptions: {
+                    column: {
+                        stacking: 'normal'
+                    }
+                },
+                series:[
+                    {name:param["from"],data:data[0],color:"#ff0000"},
+                    {name:param["to"],data:data[1]},
+                    {name:param["from"]+"大厅",visible:false,data:data[2],stack:0,type:'column'},
+                    {name:param["to"]+"大厅",visible:false,data:data[3],stack:1,type:'column'},
+                    {name:param["from"]+"空间",visible:false,data:data[4],stack:0,type:'column'},
+                    {name:param["to"]+"空间",visible:false,data:data[5],stack:1,type:'column'},
+                    {name:param["from"]+"累计",visible:false,data:accdata[0]},
+                    {name:param["to"]+"累计",visible:false,data:accdata[1]},
+                    {name:param["from"]+"大厅累计",visible:false,data:accdata[2],stack:0,type:'column'},
+                    {name:param["to"]+"大厅累计",visible:false,data:accdata[3],stack:1,type:'column'},
+                    {name:param["from"]+"空间累计",visible:false,data:accdata[4],stack:0,type:'column'},
+                    {name:param["to"]+"空间累计",visible:false,data:accdata[5],stack:1,type:'column'}
+                ]
+            });
+
+            for(i=0;i<6;i++)
+                $("#totalh_chart").highcharts().series[i].setData(data[i],true);
+
+            for(i=0;i<6;i++)
+                $("#totalh_chart").highcharts().series[i+6].setData(accdata[i],true);
+        }
+    });
+}
+
+function plotData(data)
+{
+    var d=[[]];
+    for  (var i in data.rows )
+    {
+        row = data.rows[i];
+        d[0].push([row["hour"],parseFloat(row["ammount"])]);
+    }
+ 
+    alert(d); 
+ 
+    var plot1 = $.jqplot('chart',d,{
+       title: '总收入',
+        width:600,
+        seriesDefaults: {
+            showMarker:false,
+            pointLabels: { show:true }
+        },
+        series:[{lineWidth:4, markerOptions:{style:'square'}}],
+        highlighter: {
+            show: true 
+        }
+    });
+}
+</script>

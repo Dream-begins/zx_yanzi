@@ -1,0 +1,53 @@
+<div id="regdays">
+    <div>
+        <table class="tab_search">
+            <tr>
+                <td>从:</td>
+                <td><input class="easyui-datebox" name="from"></input></td>
+                <td>到:</td>
+                <td><input class="easyui-datebox" name="to"></input></td>
+                <td>
+                    <select id="days" name="days">
+                        <option value="30">30天</option>
+                        <option value="90">90天</option>
+                        <option value="180">180天</option>
+                        <option value="360">360天</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="button" value="搜索" onclick="reloadData('regdays')" />
+                </td>
+                <td>
+                    <input type="checkbox" value="1" name="payuser">包含付费人数
+                </td>
+                <td>
+                    <input type="button" value="导出" onclick="exportData('regdays','regdays.php')" />
+                </td>
+                <td>
+                    <input type="button" value="导出2" onclick="exportData('regdays','regdays2.php')" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="dataTable" styles="width:100%" ></div>
+</div>
+
+<script type="text/javascript">
+$(function(){
+    cols = [{field:'dt',title:'日期',width:100},{field:'user',title:'注册数',width:100}];
+    days = $("#regdays #days").val();
+    for(i=1;i<=30;i++)
+        cols.push({field:'dt'+i,title:'第'+i+"天",width:50});
+    
+    $('#regdays #dataTable').datagrid({
+        url:'regdays.php',
+        remoteSort: true,
+        pagination:true,
+        rownumbers:true,
+        columns:[cols]
+    });
+    
+    $.parser.parse($("#regdays .tab_search"));
+});
+</script>
+

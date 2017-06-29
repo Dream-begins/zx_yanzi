@@ -1,0 +1,84 @@
+<div id="blacklist">
+    <div>
+        <table class="tab_search">
+            <tr>
+                <td>openid:</td>
+                <td><input type="text" id="openid" name="openid" value="" /></td>
+                <td><input type="button" value="搜索" onclick="reloadData('blacklist')" /></td>
+                <td><input type="button" value="添加>>" onclick="showAdd()" /></td>
+            </tr>
+        </table>
+    </div>
+
+    <div id="addDiv" style="display:none;border:solid 1px">
+        <table>
+            <tr>
+                <td>openid:</td>
+                <td><input type="text" id="openid" value="" maxlength="32" style="width:300px") /></td>
+            </tr>
+            <tr>
+                <td colspan="2"><input type="button" value="保存" onclick="addBlack()" /> </td>
+            </tr>
+        </table>
+    </div>
+
+    <div id="dataTable" styles="width:100%" ></div>
+
+</div>
+
+<script type="text/javascript">
+$(function()
+{
+    $('#blacklist #dataTable').datagrid(
+    {
+        url:'blacklist.php?action=list',
+        remoteSort: true,
+        pagination:true,
+        rownumbers:true,
+        columns:[[
+            {field:'ACC',title:'玩家ID',width:200},
+            {field:'serverid',title:'服务器',width:80},
+            {field:'dt1',title:'操作',width:100,formatter:function(val,row){
+                return "<a href='javascript:delblack(\""+row["ACC"]+"\")'>删除</a>";
+            }}
+        ]]
+    });
+});
+
+function delblack(id)
+{
+    $.getJSON("blacklist.php?action=del&openid="+id,function(data){
+        if(data.result == "success") reloadData("blacklist");
+    });
+}
+
+function showAdd()
+{
+    $("#addDiv").toggle();
+}
+
+function addBlack()
+{
+    id = $.trim($("#addDiv #openid").val());
+    memo=$.trim($("#addDiv #memo").val());
+    
+    if(id.length != 32)
+    {
+        alert("openid 非法!");
+        return;
+    }
+
+    if(confirm("是否确认添加黑名单？"))
+    {
+        $.getJSON("blacklist.php?action=add&openid="+id+"&memo="+memo,function(data){
+            if(data.result == "success")
+            {
+                $("#addDiv #openid").val("");
+                $("#addDiv #memo").val("");
+                alert("添加成功");
+                reloadData("blacklist");
+            }
+        });
+    }
+}
+</script>

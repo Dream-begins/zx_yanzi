@@ -1,0 +1,80 @@
+<div id="paymonth">
+    <div>
+        <table class="tab_search">
+            <tr>
+                <td>从:</td>
+                <td><input class="easyui-datebox" name="from"></input></td>
+                <td>到:</td>
+                <td><input class="easyui-datebox" name="to"></input></td>
+                <td>
+                    <select id="pf" name="pf" >
+                        <option value="">全部</option>
+                        <option value="qqgame">大厅</option>
+                    </select>
+                </td>
+                    <input type="button" value="搜索" onclick="reloadData('paymonth')" />
+                </td>
+                <td>
+                    <input type="button" value="导出" onclick="exportData('paymonth','paymonth.php')" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    
+    <div id="dataTable" styles="width:100%" ></div>
+</div>
+
+<script type="text/javascript">
+$(function(){
+    cols = [{field:'dt',title:'日期',width:100},{field:'user',title:'注册数',width:100}];
+
+    for(i=1;i<=10;i++)
+    {
+        cols.push({
+            field:'dt'+i,
+            title:'第'+i+"月",
+            width:80,
+            formatter:function(val){ 
+                if(val) 
+                    return parseFloat(val).toFixed(2);
+                return 0;
+            }
+        });
+
+        cols.push({
+            field:'avg'+i,
+            title:'第'+i+"月注收比",
+            width:50,
+            formatter:function(val,row){
+                if(val) 
+                    return parseFloat(val).toFixed(2);
+                return 0;
+            }
+        });
+
+        if(i>1)
+            cols.push({
+                field:'rate'+i,
+                title:'第'+i+"月衰减率",
+                width:50,
+                formatter:function(val,row)
+                {
+                    if(val)
+                        return parseFloat(val).toFixed(2);
+                    return 0;
+                }
+            });
+    }
+
+    $('#paymonth #dataTable').datagrid({
+        url:'paymonth.php',
+        remoteSort: true,
+        pagination:true,
+        rownumbers:true,
+        columns:[cols]
+    });
+
+    $.parser.parse($("#paymonth .tab_search"));
+});
+
+</script>
